@@ -1,0 +1,35 @@
+# @file      .gitlab-ci.yml
+# @author    Benedikt Mersch     [mersch@igg.uni-bonn.de]
+#
+# Copyright (c) 2023 Benedikt Mersch, all rights reserved
+image: gitlab.ipb.uni-bonn.de:4567/ipb-team/robots/ipb-car/docker_images/ros:humble
+
+stages:
+  - format
+  - configure
+  - build
+  - update
+
+format:
+  stage: format
+  script:
+    - black --check $CI_PROJECT_DIR
+
+configure:
+  stage: configure
+  dependencies:
+    - format
+  script:
+    - rsync --exclude '**/.git/' -ar $CI_PROJECT_DIR src/
+
+build:
+  stage: build
+  dependencies:
+    - configure
+  script:
+    - colcon build --packages-up-to $CI_PROJECT_NAME --event-handlers console_direct+
+
+include:
+  - project: "ipb-team/robots/ipb-car/meta-workspace"
+    ref: master
+    file: ".templates/.gitlab-ci-submodule-update.yml"
