@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>ipb_car_monitor</name>
+  <version>0.0.1</version>
+  <description>
+    Python script to monitor the recording of the ipb-car
+  </description>
+  <maintainer email="bmersch@uni-bonn.de">Benedikt Mersch</maintainer>
+  <license>MIT</license>
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

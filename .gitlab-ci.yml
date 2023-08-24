@@ -1,0 +1,53 @@
+# @file      .gitlab-ci.yml
+# @author    Ignacio Vizzo     [ivizzo@uni-bonn.de]
+#
+# Copyright (c) 2020 Ignacio Vizzo, all rights reserved
+default:
+  image: gitlab.ipb.uni-bonn.de:4567/ipb-team/robots/ipb-car/docker_images/ros:latest
+  before_script:
+    - mkdir -p catkin_ws/src/ && cd catkin_ws/
+  artifacts:
+    expire_in: 10 m
+    untracked: true
+    paths:
+      - catkin_ws/
+
+stages:
+  - format
+  - configure
+  - build
+  - linters
+  - update
+
+format:
+  stage: format
+  script:
+    - black --check $CI_PROJECT_DIR
+
+configure:
+  stage: configure
+  dependencies:
+    - format
+  script:
+    - rsync --exclude '**/.git/' -ar $CI_PROJECT_DIR src/
+    - catkin init
+
+build:
+  stage: build
+  dependencies:
+    - configure
+  script:
+    - catkin build --no-status --verbose ${CI_PROJECT_NAME}
+
+catkin_lint:
+  stage: linters
+  dependencies:
+    - build
+  script:
+    - source devel/setup.bash
+    - catkin_lint -W1 --strict --pkg ${CI_PROJECT_NAME} --ignore unknown_package
+
+include:
+  - project: "ipb-team/robots/ipb-car/meta-workspace"
+    ref: master
+    file: ".templates/.gitlab-ci-submodule-update.yml"
